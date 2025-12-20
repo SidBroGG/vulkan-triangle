@@ -7,8 +7,11 @@
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> presentFamily;
 
-    bool isComplete() { return graphicsFamily.has_value(); }
+    bool isComplete() {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+    }
 };
 
 class VulkanApp {
@@ -19,9 +22,11 @@ class VulkanApp {
     GLFWwindow* window;
 
     VkInstance instance;
+    VkSurfaceKHR surface;
     VkPhysicalDevice physicalDevice;
     VkDevice device;
     VkQueue graphicsQueue;
+    VkQueue presentQueue;
 
     void InitVulkan();
     void MainLoop();
@@ -32,6 +37,7 @@ class VulkanApp {
 
     // Vulkan part
     void CreateInstance();
+    void CreateSurface();
     void PickPhysicalDevice();
     void CreateLogicalDevice();
 
