@@ -128,9 +128,10 @@ void VulkanApp::CreateLogicalDevice() {
         static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount = 0;
+    createInfo.enabledExtensionCount =
+        static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.ppEnabledExtensionNames = deviceExtensions.data();
     createInfo.enabledLayerCount = 0;
-    createInfo.ppEnabledExtensionNames = nullptr;
 
     VkResult result =
         vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
@@ -162,7 +163,9 @@ void VulkanApp::PrintExts() {
 bool VulkanApp::IsDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = FindQueueFamilies(device);
 
-    return indices.graphicsFamily.has_value();
+    bool extSupported = CheckDeviceExtensionSupport(device);
+
+    return indices.isComplete() && extSupported;
 }
 
 QueueFamilyIndices VulkanApp::FindQueueFamilies(VkPhysicalDevice device) {
@@ -197,4 +200,42 @@ QueueFamilyIndices VulkanApp::FindQueueFamilies(VkPhysicalDevice device) {
     }
 
     return indices;
+}
+
+bool VulkanApp::CheckDeviceExtensionSupport(VkPhysicalDevice dev) {
+    uint32_t extCount;
+    vkEnumerateDeviceExtensionProperties(dev, nullptr, &extCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExt(extCount);
+    vkEnumerateDeviceExtensionProperties(dev, nullptr, &extCount,
+                                         availableExt.data());
+
+    std::set<std::string> requiredExt(deviceExtensions.begin(),
+                                      deviceExtensions.end());
+
+    for (const auto& ext : availableExt) {
+        requiredExt.erase(ext.extensionName);
+    }
+
+    return requiredExt.empty();
+}
+
+SwapchainSupportDetails VulkanApp::querySwapchainSupport(
+    VkPhysicalDevice device) {
+    SwapchainSupportDetails details;
+
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface,
+                                              &details.capabilities);
+
+    uint32_t formatCount;
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
+                                         nullptr);
+
+    if (formatCount != 0) {
+        details.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
+                                             details.formats.data());
+    }
+
+    return details;
 }

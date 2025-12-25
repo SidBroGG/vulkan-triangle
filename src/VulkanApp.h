@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <optional>
+#include <vector>
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
@@ -12,6 +13,12 @@ struct QueueFamilyIndices {
     bool isComplete() {
         return graphicsFamily.has_value() && presentFamily.has_value();
     }
+};
+
+struct SwapchainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentMode;
 };
 
 class VulkanApp {
@@ -27,6 +34,9 @@ class VulkanApp {
     VkDevice device;
     VkQueue graphicsQueue;
     VkQueue presentQueue;
+
+    const std::vector<const char*> deviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
     void InitVulkan();
     void MainLoop();
@@ -47,4 +57,6 @@ class VulkanApp {
     // Auxiliary funcs
     bool IsDeviceSuitable(VkPhysicalDevice device);
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+    bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
+    SwapchainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
 };
