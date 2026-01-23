@@ -165,7 +165,13 @@ bool VulkanApp::IsDeviceSuitable(VkPhysicalDevice device) {
 
     bool extSupported = CheckDeviceExtensionSupport(device);
 
-    return indices.isComplete() && extSupported;
+    bool swapchainAdequate = false;
+    if (extSupported) {
+        SwapchainSupportDetails swapchainSupport = QuerySwapchainSupport(device);
+        swapchainAdequate = !swapchainSupport.formats.empty() && !swapchainSupport.presentMode.empty();
+    }
+
+    return indices.isComplete() && extSupported && swapchainAdequate;
 }
 
 QueueFamilyIndices VulkanApp::FindQueueFamilies(VkPhysicalDevice device) {
@@ -220,7 +226,7 @@ bool VulkanApp::CheckDeviceExtensionSupport(VkPhysicalDevice dev) {
     return requiredExt.empty();
 }
 
-SwapchainSupportDetails VulkanApp::querySwapchainSupport(
+SwapchainSupportDetails VulkanApp::QuerySwapchainSupport(
     VkPhysicalDevice device) {
     SwapchainSupportDetails details;
 
@@ -237,5 +243,31 @@ SwapchainSupportDetails VulkanApp::querySwapchainSupport(
                                              details.formats.data());
     }
 
+    uint32_t presentModeCount;
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+    if (presentModeCount != 0) {
+        details.presentMode.resize(presentModeCount);
+    }
+    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentMode.data());
+
     return details;
+}
+
+VkSurfaceFormatKHR VulkanApp::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    for (const auto& availableFormat : availableFormats) {
+        if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            return availableFormat;
+        }
+    }
+    return availableFormats[0];
+}
+
+VkPresentModeKHR VulkanApp::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    for (const auto& availablePresentMode : availablePresentModes) {
+        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+            return availablePresentMode;
+        }
+    }
+
+    return VK_PRESENT_MODE_FIFO_KHR;
 }

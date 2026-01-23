@@ -22,10 +22,10 @@ struct SwapchainSupportDetails {
 };
 
 class VulkanApp {
-   public:
+public:
     void run();
 
-   private:
+private:
     GLFWwindow* window;
 
     VkInstance instance;
@@ -58,5 +58,7 @@ class VulkanApp {
     bool IsDeviceSuitable(VkPhysicalDevice device);
     QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
     bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
-    SwapchainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
+    SwapchainSupportDetails QuerySwapchainSupport(VkPhysicalDevice device);
+    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 };
