@@ -1,6 +1,8 @@
 #include "VulkanApp.h"
 
+#include <algorithm>
 #include <iostream>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <vector>
@@ -106,8 +108,7 @@ void VulkanApp::CreateLogicalDevice() {
     QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(),
-                                              indices.presentFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -124,17 +125,14 @@ void VulkanApp::CreateLogicalDevice() {
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.queueCreateInfoCount =
-        static_cast<uint32_t>(queueCreateInfos.size());
+    createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
-    createInfo.enabledExtensionCount =
-        static_cast<uint32_t>(deviceExtensions.size());
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
     createInfo.ppEnabledExtensionNames = deviceExtensions.data();
     createInfo.enabledLayerCount = 0;
 
-    VkResult result =
-        vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
+    VkResult result = vkCreateDevice(physicalDevice, &createInfo, nullptr, &device);
 
     if (result != VK_SUCCESS) {
         throw std::runtime_error("Failed to create logical device");
@@ -178,12 +176,10 @@ QueueFamilyIndices VulkanApp::FindQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
-                                             nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount,
-                                             queueFamilies.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
     int i = 0;
     for (const auto& queueFamily : queueFamilies) {
@@ -192,8 +188,7 @@ QueueFamilyIndices VulkanApp::FindQueueFamilies(VkPhysicalDevice device) {
         }
 
         VkBool32 presentSupport = VK_FALSE;
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface,
-                                             &presentSupport);
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
         if (presentSupport == VK_TRUE) {
             indices.presentFamily = i;
         }
@@ -213,11 +208,9 @@ bool VulkanApp::CheckDeviceExtensionSupport(VkPhysicalDevice dev) {
     vkEnumerateDeviceExtensionProperties(dev, nullptr, &extCount, nullptr);
 
     std::vector<VkExtensionProperties> availableExt(extCount);
-    vkEnumerateDeviceExtensionProperties(dev, nullptr, &extCount,
-                                         availableExt.data());
+    vkEnumerateDeviceExtensionProperties(dev, nullptr, &extCount, availableExt.data());
 
-    std::set<std::string> requiredExt(deviceExtensions.begin(),
-                                      deviceExtensions.end());
+    std::set<std::string> requiredExt(deviceExtensions.begin(), deviceExtensions.end());
 
     for (const auto& ext : availableExt) {
         requiredExt.erase(ext.extensionName);
@@ -226,21 +219,17 @@ bool VulkanApp::CheckDeviceExtensionSupport(VkPhysicalDevice dev) {
     return requiredExt.empty();
 }
 
-SwapchainSupportDetails VulkanApp::QuerySwapchainSupport(
-    VkPhysicalDevice device) {
+SwapchainSupportDetails VulkanApp::QuerySwapchainSupport(VkPhysicalDevice device) {
     SwapchainSupportDetails details;
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface,
-                                              &details.capabilities);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
     uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
-                                         nullptr);
+    vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
     if (formatCount != 0) {
         details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount,
-                                             details.formats.data());
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
     }
 
     uint32_t presentModeCount;
@@ -270,4 +259,21 @@ VkPresentModeKHR VulkanApp::ChooseSwapPresentMode(const std::vector<VkPresentMod
     }
 
     return VK_PRESENT_MODE_FIFO_KHR;
+}
+
+VkExtent2D VulkanApp::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+        return capabilities.currentExtent;
+    } else {
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+
+        VkExtent2D actualExtend = {
+            static_cast<uint32_t>(width),
+            static_cast<uint32_t>(height)};
+
+        actualExtend.width = std::clamp(actualExtend.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        actualExtend.height = std::clamp(actualExtend.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+        return actualExtend;
+    }
 }
