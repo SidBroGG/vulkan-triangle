@@ -42,6 +42,8 @@ private:
     VkFormat swapchainImageFormat;
     VkExtent2D swapchainExtent;
 
+    std::vector<VkImageView> swapchainImageViews;
+
     void InitVulkan();
     void MainLoop();
     void Cleanup();
@@ -55,6 +57,7 @@ private:
     void PickPhysicalDevice();
     void CreateLogicalDevice();
     void CreateSwapchain();
+    void CreateImageViews();
 
     // Debug
     void PrintExts();
