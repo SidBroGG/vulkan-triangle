@@ -34,10 +34,13 @@ private:
     VkDevice device;
     VkQueue graphicsQueue;
     VkQueue presentQueue;
-    VkSwapchainKHR swapchain;
 
-    const std::vector<const char*> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+    const std::vector<const char*> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+    VkSwapchainKHR swapchain;
+    std::vector<VkImage> swapchainImages;
+    VkFormat swapchainImageFormat;
+    VkExtent2D swapchainExtent;
 
     void InitVulkan();
     void MainLoop();

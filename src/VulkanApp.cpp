@@ -188,6 +188,13 @@ void VulkanApp::CreateSwapchain() {
     if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create swapchain");
     }
+
+    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);
+    swapchainImages.resize(imageCount);
+    vkGetSwapchainImagesKHR(device, swapchain, &imageCount, swapchainImages.data());
+
+    swapchainImageFormat = surfaceFormat.format;
+    swapchainExtent = extent;
 }
 
 // Debug part
