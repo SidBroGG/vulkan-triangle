@@ -22,6 +22,7 @@ void VulkanApp::InitVulkan() {
     CreateLogicalDevice();
     CreateSwapchain();
     CreateImageViews();
+    CreateGraphicsPipeline();
 }
 
 void VulkanApp::MainLoop() {
@@ -225,6 +226,9 @@ void VulkanApp::CreateImageViews() {
             throw std::runtime_error("failed to create image view");
         }
     }
+}
+
+void VulkanApp::CreateGraphicsPipeline() {
 }
 
 // Debug part

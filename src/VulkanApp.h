@@ -58,6 +58,7 @@ private:
     void CreateLogicalDevice();
     void CreateSwapchain();
     void CreateImageViews();
+    void CreateGraphicsPipeline();
 
     // Debug
     void PrintExts();
